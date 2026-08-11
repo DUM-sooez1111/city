@@ -1,5 +1,9 @@
 # Idle Island Planning
 
+## 바로 플레이
+
+**[웹에서 Idle Island Planning 플레이하기](https://dum-sooez1111.github.io/city/)**
+
 밝은 2D 탑다운 섬을 개발하는 브라우저용 방치형 도시 건설 게임입니다.
 
 ## 플레이
