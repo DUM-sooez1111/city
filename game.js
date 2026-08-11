@@ -17,7 +17,7 @@
 
   function resize(){
     const r=canvas.getBoundingClientRect(); canvas.width=Math.round(r.width*DPR); canvas.height=Math.round(r.height*DPR);
-    scale=Math.max(r.width/WORLD.w,r.height/(r.width<r.height?620:WORLD.h)); const cameraX=r.width<r.height&&state.level<3?535:WORLD.w/2; offsetX=r.width/2-cameraX*scale; offsetY=r.height/2-(WORLD.h/2)*scale;clampCamera();
+    scale=Math.max(r.width/WORLD.w,r.height/(r.width<r.height?620:WORLD.h)); const cameraX=r.width<r.height&&state.level<3?350:WORLD.w/2; offsetX=r.width/2-cameraX*scale; offsetY=r.height/2-(WORLD.h/2)*scale;clampCamera();
     ctx.setTransform(DPR*scale,0,0,DPR*scale,DPR*offsetX,DPR*offsetY);
   }
   window.addEventListener('resize',resize); resize();
@@ -34,6 +34,8 @@
     [[130,85],[180,60],[235,110],[1060,95],[1120,70],[1180,125],[1020,180],[580,90],[650,65],[720,110],[1080,560],[1140,530],[1190,575],[570,600],[630,625]].forEach((p,i)=>tree(p[0],p[1],1.15,i%3===0?'#4d8e35':'#659f3c'));
     road([[0,190],[180,190],[300,240],[425,260],[560,350],[730,365],[875,425],[1040,440],[1280,365]],42);
     road([[565,350],[575,205],[670,120],[820,0]],34); road([[875,425],[900,530],[985,640]],32); road([[300,240],[230,340],[260,470]],30);
+    // Starter-island loop. Trucks use this exact center line until the mainland unlocks.
+    road([[300,470],[335,575],[465,650],[625,630],[760,540],[730,470],[610,440],[450,440],[300,470]],28);
     // rail line
     ctx.strokeStyle='#4f5960';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(0,135);ctx.lineTo(190,135);ctx.quadraticCurveTo(260,135,310,185);ctx.lineTo(410,220);ctx.stroke();ctx.strokeStyle='#d6d1bd';ctx.lineWidth=2;ctx.setLineDash([8,7]);ctx.stroke();ctx.setLineDash([]);
     for(let x=0;x<200;x+=16){ctx.fillStyle='#5c5145';ctx.fillRect(x,127,3,16)}
@@ -67,16 +69,16 @@
     }
   }
   function drawVehicles(){
-    const roadSpeed=1+(state.roadLevel-1)*.22,u=(t*.055*roadSpeed)%1,starterRoute=[[260,540],[380,610],[555,625],[720,535],[650,455],[475,445],[310,475]],mainRoute=[[300,440],[425,430],[560,350],[730,365],[875,425],[1040,440]],route=state.level<3?starterRoute:mainRoute,point=routePoint(route,u),next=routePoint(route,(u+.01)%1);let x=point.x,y=point.y;const topLevel=Math.max(1,...sites.filter(s=>s.built).map(s=>s.level)),tier=Math.min(4,Math.floor(topLevel/15));const colors=['#4b91dc','#f0b62d','#e94f47','#7651b5','#303b42'];const lengths=[25,29,34,39,45];ctx.save();ctx.translate(x,y);ctx.rotate(Math.atan2(next.y-y,next.x-x));ctx.fillStyle=colors[tier];ctx.strokeStyle='#2c4950';ctx.lineWidth=2;ctx.fillRect(-lengths[tier]/2,-8,lengths[tier],16);ctx.strokeRect(-lengths[tier]/2,-8,lengths[tier],16);ctx.fillStyle='#d9eff3';ctx.fillRect(-lengths[tier]/2+5,-6,8,12);if(tier>=2){ctx.fillStyle='#f4d97f';ctx.fillRect(3,-6,lengths[tier]/2-5,12)}ctx.restore();
-    if(state.roadLevel>1){ctx.save();ctx.translate(0,Math.sin(t*5)*2);ctx.fillStyle='#efc52d';ctx.font='900 22px Nunito';for(let i=0;i<Math.min(5,state.roadLevel);i++)ctx.fillText('›',280+i*65,416+i*4);ctx.restore()}
+    const roadSpeed=1+(state.roadLevel-1)*.22,u=(t*.055*roadSpeed)%1,starterRoute=[[300,470],[335,575],[465,650],[625,630],[760,540],[730,470],[610,440],[450,440]],mainRoute=[[0,190],[180,190],[300,240],[425,260],[560,350],[730,365],[875,425],[1040,440],[1280,365],[1040,440],[875,425],[730,365],[560,350],[425,260],[300,240],[180,190]],route=state.level<3?starterRoute:mainRoute,point=routePoint(route,u),next=routePoint(route,(u+.01)%1);let x=point.x,y=point.y;const topLevel=Math.max(1,...sites.filter(s=>s.built).map(s=>s.level)),tier=Math.min(4,Math.floor(topLevel/15));const colors=['#4b91dc','#f0b62d','#e94f47','#7651b5','#303b42'];const lengths=[25,29,34,39,45];ctx.save();ctx.translate(x,y);ctx.rotate(Math.atan2(next.y-y,next.x-x));ctx.fillStyle=colors[tier];ctx.strokeStyle='#2c4950';ctx.lineWidth=2;ctx.fillRect(-lengths[tier]/2,-8,lengths[tier],16);ctx.strokeRect(-lengths[tier]/2,-8,lengths[tier],16);ctx.fillStyle='#d9eff3';ctx.fillRect(-lengths[tier]/2+5,-6,8,12);if(tier>=2){ctx.fillStyle='#f4d97f';ctx.fillRect(3,-6,lengths[tier]/2-5,12)}ctx.restore();
+    if(state.roadLevel>1){ctx.save();ctx.translate(0,Math.sin(t*5)*2);ctx.fillStyle='#efc52d';ctx.font='900 22px Nunito';const arrows=state.level<3?[[355,565],[470,638],[615,618],[710,535]]:[[425,255],[555,345],[725,360],[870,420]];for(let i=0;i<Math.min(arrows.length,state.roadLevel);i++)ctx.fillText('›',arrows[i][0],arrows[i][1]);ctx.restore()}
     drawCargoShip();
   }
   function routePoint(points,progress){const lengths=[];let total=0;for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length],len=Math.hypot(b[0]-a[0],b[1]-a[1]);lengths.push(len);total+=len}let d=progress*total;for(let i=0;i<lengths.length;i++){if(d<=lengths[i]){const a=points[i],b=points[(i+1)%points.length],p=d/lengths[i];return{x:a[0]+(b[0]-a[0])*p,y:a[1]+(b[1]-a[1])*p}}d-=lengths[i]}return{x:points[0][0],y:points[0][1]}}
   function drawCargoShip(){
-    const dockX=175,phase=t%24,loading=phase>=6&&phase<16,shipX=phase<6?-90+(phase/6)*(dockX+90):phase<16?dockX:dockX-((phase-16)/8)*(dockX+120),shipY=545;
+    const dockX=30,phase=t%24,loading=phase>=6&&phase<16,shipX=phase<6?-100+(phase/6)*(dockX+100):phase<16?dockX:dockX-((phase-16)/8)*(dockX+130),shipY=545;
     // Working harbour crane on the western pier.
-    ctx.save();ctx.strokeStyle='#65451f';ctx.lineWidth=3;ctx.fillStyle='#e89b2d';ctx.fillRect(218,468,13,67);ctx.strokeRect(218,468,13,67);ctx.beginPath();ctx.moveTo(224,472);ctx.lineTo(172,500);ctx.lineTo(224,500);ctx.stroke();ctx.fillStyle='#f4b43e';ctx.beginPath();ctx.moveTo(224,462);ctx.lineTo(241,475);ctx.lineTo(207,475);ctx.closePath();ctx.fill();ctx.stroke();
-    if(loading){const slot=Math.min(2,Math.floor((phase-6)/3)),move=((phase-6)%3)/3,startX=210,startY=522,endX=shipX-12+slot*13,endY=shipY-4;const lift=move<.5?move*2:2-move*2,cx=startX+(endX-startX)*move,cy=startY+(endY-startY)*move-34*lift;ctx.strokeStyle='#4c5556';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(172,500);ctx.lineTo(cx,cy);ctx.stroke();drawContainer(cx,cy,'#e7a22e')}
+    ctx.save();ctx.strokeStyle='#65451f';ctx.lineWidth=3;ctx.fillStyle='#e89b2d';ctx.fillRect(98,468,13,67);ctx.strokeRect(98,468,13,67);ctx.beginPath();ctx.moveTo(104,472);ctx.lineTo(32,500);ctx.lineTo(104,500);ctx.stroke();ctx.fillStyle='#f4b43e';ctx.beginPath();ctx.moveTo(104,462);ctx.lineTo(121,475);ctx.lineTo(87,475);ctx.closePath();ctx.fill();ctx.stroke();
+    if(loading){const slot=Math.min(2,Math.floor((phase-6)/3)),move=((phase-6)%3)/3,startX=90,startY=522,endX=shipX-12+slot*13,endY=shipY-4;const lift=move<.5?move*2:2-move*2,cx=startX+(endX-startX)*move,cy=startY+(endY-startY)*move-34*lift;ctx.strokeStyle='#4c5556';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(32,500);ctx.lineTo(cx,cy);ctx.stroke();drawContainer(cx,cy,'#e7a22e')}
     ctx.restore();
     // Wake is only visible while the ship is under way.
     if(!loading){ctx.save();ctx.globalAlpha=.65;ctx.strokeStyle='white';ctx.lineWidth=3;for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(shipX+35+i*10,shipY-9-i*2);ctx.quadraticCurveTo(shipX+48+i*13,shipY,shipX+35+i*10,shipY+9+i*2);ctx.stroke()}ctx.restore()}
