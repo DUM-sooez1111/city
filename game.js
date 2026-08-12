@@ -119,12 +119,26 @@
     const cargoX=90+(shipX-12+slot*13-90)*smooth;
     const cargoY=522+(shipY-4-522)*smooth;
 
-    // Top-down crane: fixed base, rotating boom, and one container travelling across the plan view.
     const targetX=loading?cargoX:55,targetY=loading?cargoY:515;
-    ctx.save();ctx.strokeStyle='#8b5a20';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(104,500);ctx.lineTo(targetX,targetY);ctx.stroke();ctx.strokeStyle='#ffc048';ctx.lineWidth=4;ctx.stroke();ctx.fillStyle='#e89b2d';ctx.strokeStyle='#3d4e52';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(88,484,32,32,5);ctx.fill();ctx.stroke();ctx.fillStyle='#5a6c6f';ctx.beginPath();ctx.arc(104,500,7,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#fff7d6';ctx.font='900 9px Nunito';ctx.textAlign='center';ctx.fillText(`Lv.${state.craneLevel}`,104,478);if(loading&&shipCargo>0)drawContainer(cargoX,cargoY,'#e7a22e');ctx.restore();
 
     if(!loading){const wakeSide=departing?1:-1;ctx.save();ctx.globalAlpha=.65;ctx.strokeStyle='white';ctx.lineWidth=3;for(let i=0;i<3;i++){const wx=shipX+wakeSide*(40+i*11);ctx.beginPath();ctx.moveTo(wx,shipY-8-i*2);ctx.lineTo(wx+wakeSide*10,shipY);ctx.lineTo(wx,shipY+8+i*2);ctx.stroke()}ctx.restore()}
     ctx.save();ctx.translate(shipX,shipY);ctx.rotate(heading);ctx.fillStyle='#263d4350';ctx.beginPath();ctx.ellipse(4,5,39,18,0,0,7);ctx.fill();path(()=>{ctx.moveTo(-34,-14);ctx.lineTo(22,-14);ctx.lineTo(38,0);ctx.lineTo(22,14);ctx.lineTo(-34,14);ctx.closePath()},'#d25748','#314d54',3);ctx.fillStyle='#f1eee0';ctx.strokeStyle='#314d54';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-28,-10,18,20,3);ctx.fill();ctx.stroke();ctx.fillStyle='#83cce5';ctx.fillRect(-24,-7,7,14);ctx.strokeRect(-24,-7,7,14);for(let i=0;i<loadedCount;i++)drawContainer(-1+i*13,-6,i%2?'#4e9bc3':'#e7a22e');ctx.restore();
+    drawHarborCrane(104,500,targetX,targetY,loading&&shipCargo>0,cargoX,cargoY);
+  }
+  function drawHarborCrane(baseX,baseY,targetX,targetY,movingCargo,cargoX,cargoY){
+    const angle=Math.atan2(targetY-baseY,targetX-baseX),distance=Math.hypot(targetX-baseX,targetY-baseY),boom=Math.max(48,distance-7);
+    ctx.save();ctx.translate(baseX,baseY);ctx.rotate(angle);
+    ctx.globalAlpha=.28;ctx.strokeStyle='#21383e';ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(-22,6);ctx.lineTo(boom,6);ctx.stroke();ctx.globalAlpha=1;
+    ctx.fillStyle='#9d6322';ctx.strokeStyle='#3b4c50';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-30,-14,22,28,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#f1a22d';ctx.beginPath();ctx.roundRect(-13,-18,30,36,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#f8edd1';ctx.beginPath();ctx.roundRect(-8,-13,15,12,2);ctx.fill();ctx.stroke();ctx.fillStyle='#70b9d0';ctx.fillRect(-5,-10,9,6);ctx.strokeRect(-5,-10,9,6);
+    for(const y of [-6,6]){ctx.strokeStyle='#533c28';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(7,y);ctx.lineTo(boom,y);ctx.stroke();ctx.strokeStyle='#e78d24';ctx.lineWidth=2.5;ctx.stroke()}
+    ctx.strokeStyle='#7a4a20';ctx.lineWidth=2;for(let x=8,n=0;x<boom-5;x+=12,n++){ctx.beginPath();ctx.moveTo(x,n%2?-6:6);ctx.lineTo(Math.min(boom,x+12),n%2?6:-6);ctx.stroke()}
+    ctx.fillStyle='#e58d25';ctx.strokeStyle='#3b4c50';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(boom-6,-9,12,18,3);ctx.fill();ctx.stroke();ctx.fillStyle='#36494d';ctx.beginPath();ctx.arc(boom,0,3,0,7);ctx.fill();
+    ctx.restore();
+    ctx.save();ctx.strokeStyle='#3c4b4e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(targetX,targetY-7);ctx.lineTo(targetX,targetY+2);ctx.stroke();ctx.fillStyle='#f0a12d';ctx.beginPath();ctx.arc(targetX,targetY+3,4,0,Math.PI);ctx.stroke();ctx.restore();
+    ctx.save();ctx.fillStyle='#fff7d6';ctx.strokeStyle='#3d4e52';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(baseX-19,baseY-32,38,15,6);ctx.fill();ctx.stroke();ctx.fillStyle='#344b50';ctx.font='900 9px Nunito';ctx.textAlign='center';ctx.fillText(`CRANE ${state.craneLevel}`,baseX,baseY-21);ctx.restore();
+    if(movingCargo)drawContainer(cargoX,cargoY,'#e7a22e');
   }
   function drawContainer(x,y,color){ctx.fillStyle=color;ctx.strokeStyle='#334c52';ctx.lineWidth=2;ctx.fillRect(x-6,y-5,12,10);ctx.strokeRect(x-6,y-5,12,10);ctx.beginPath();ctx.moveTo(x-2,y-4);ctx.lineTo(x-2,y+4);ctx.moveTo(x+2,y-4);ctx.lineTo(x+2,y+4);ctx.stroke()}
   function drawLockedFog(){
