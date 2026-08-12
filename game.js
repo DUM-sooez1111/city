@@ -112,21 +112,19 @@
     const shipY=545,heading=departing?Math.PI:0;
     const shipCargo=departing?lastShipCargo:Math.min(3,Math.floor(state.deliveredCargo||0));
     const loadProgress=loading?(phase-6)/loadTime:departing?1:0;
-    const loadedCount=Math.min(shipCargo,Math.floor(loadProgress*Math.max(1,shipCargo)));
-    const slot=Math.min(Math.max(0,shipCargo-1),Math.floor(loadProgress*Math.max(1,shipCargo)));
-    const move=(loadProgress*Math.max(1,shipCargo))%1;
-    const smooth=move*move*(3-2*move);
-    const cargoX=90+(shipX-12+slot*13-90)*smooth;
-    const cargoY=522+(shipY-4-522)*smooth;
-
-    const targetX=loading?cargoX:55,targetY=loading?cargoY:515;
+    const cargoCycle=loadProgress*Math.max(1,shipCargo),completed=Math.floor(cargoCycle),move=cargoCycle%1;
+    const slot=Math.min(Math.max(0,shipCargo-1),completed),carrying=loading&&completed<shipCargo&&move<.58;
+    const turnProgress=carrying?move/.58:move>=.58?1-(move-.58)/.42:0,smoothTurn=Math.max(0,Math.min(1,turnProgress))**2*(3-2*Math.max(0,Math.min(1,turnProgress)));
+    const loadedCount=Math.min(shipCargo,completed+(loading&&move>=.58?1:0));
+    const sourceAngle=Math.atan2(515-500,55-104),shipAngle=Math.atan2(shipY-4-500,shipX-12+slot*13-104),angleDelta=Math.atan2(Math.sin(shipAngle-sourceAngle),Math.cos(shipAngle-sourceAngle));
+    const craneAngle=sourceAngle+angleDelta*smoothTurn;
 
     if(!loading){const wakeSide=departing?1:-1;ctx.save();ctx.globalAlpha=.65;ctx.strokeStyle='white';ctx.lineWidth=3;for(let i=0;i<3;i++){const wx=shipX+wakeSide*(40+i*11);ctx.beginPath();ctx.moveTo(wx,shipY-8-i*2);ctx.lineTo(wx+wakeSide*10,shipY);ctx.lineTo(wx,shipY+8+i*2);ctx.stroke()}ctx.restore()}
     ctx.save();ctx.translate(shipX,shipY);ctx.rotate(heading);ctx.fillStyle='#263d4350';ctx.beginPath();ctx.ellipse(4,5,39,18,0,0,7);ctx.fill();path(()=>{ctx.moveTo(-34,-14);ctx.lineTo(22,-14);ctx.lineTo(38,0);ctx.lineTo(22,14);ctx.lineTo(-34,14);ctx.closePath()},'#d25748','#314d54',3);ctx.fillStyle='#f1eee0';ctx.strokeStyle='#314d54';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-28,-10,18,20,3);ctx.fill();ctx.stroke();ctx.fillStyle='#83cce5';ctx.fillRect(-24,-7,7,14);ctx.strokeRect(-24,-7,7,14);for(let i=0;i<loadedCount;i++)drawContainer(-1+i*13,-6,i%2?'#4e9bc3':'#e7a22e');ctx.restore();
-    drawHarborCrane(104,500,targetX,targetY,loading&&shipCargo>0,cargoX,cargoY);
+    drawHarborCrane(104,500,craneAngle,carrying);
   }
-  function drawHarborCrane(baseX,baseY,targetX,targetY,movingCargo,cargoX,cargoY){
-    const angle=Math.atan2(targetY-baseY,targetX-baseX),distance=Math.hypot(targetX-baseX,targetY-baseY),boom=Math.max(48,distance-7);
+  function drawHarborCrane(baseX,baseY,angle,movingCargo){
+    const boom=82;
     ctx.save();ctx.translate(baseX,baseY);ctx.rotate(angle);
     ctx.globalAlpha=.28;ctx.strokeStyle='#21383e';ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(-22,6);ctx.lineTo(boom,6);ctx.stroke();ctx.globalAlpha=1;
     ctx.fillStyle='#9d6322';ctx.strokeStyle='#3b4c50';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-30,-14,22,28,4);ctx.fill();ctx.stroke();
@@ -135,10 +133,8 @@
     for(const y of [-6,6]){ctx.strokeStyle='#533c28';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(7,y);ctx.lineTo(boom,y);ctx.stroke();ctx.strokeStyle='#e78d24';ctx.lineWidth=2.5;ctx.stroke()}
     ctx.strokeStyle='#7a4a20';ctx.lineWidth=2;for(let x=8,n=0;x<boom-5;x+=12,n++){ctx.beginPath();ctx.moveTo(x,n%2?-6:6);ctx.lineTo(Math.min(boom,x+12),n%2?6:-6);ctx.stroke()}
     ctx.fillStyle='#e58d25';ctx.strokeStyle='#3b4c50';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(boom-6,-9,12,18,3);ctx.fill();ctx.stroke();ctx.fillStyle='#36494d';ctx.beginPath();ctx.arc(boom,0,3,0,7);ctx.fill();
-    ctx.restore();
-    ctx.save();ctx.strokeStyle='#3c4b4e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(targetX,targetY-7);ctx.lineTo(targetX,targetY+2);ctx.stroke();ctx.fillStyle='#f0a12d';ctx.beginPath();ctx.arc(targetX,targetY+3,4,0,Math.PI);ctx.stroke();ctx.restore();
+    if(movingCargo)drawContainer(boom,0,'#e7a22e');ctx.restore();
     ctx.save();ctx.fillStyle='#fff7d6';ctx.strokeStyle='#3d4e52';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(baseX-19,baseY-32,38,15,6);ctx.fill();ctx.stroke();ctx.fillStyle='#344b50';ctx.font='900 9px Nunito';ctx.textAlign='center';ctx.fillText(`CRANE ${state.craneLevel}`,baseX,baseY-21);ctx.restore();
-    if(movingCargo)drawContainer(cargoX,cargoY,'#e7a22e');
   }
   function drawContainer(x,y,color){ctx.fillStyle=color;ctx.strokeStyle='#334c52';ctx.lineWidth=2;ctx.fillRect(x-6,y-5,12,10);ctx.strokeRect(x-6,y-5,12,10);ctx.beginPath();ctx.moveTo(x-2,y-4);ctx.lineTo(x-2,y+4);ctx.moveTo(x+2,y-4);ctx.lineTo(x+2,y+4);ctx.stroke()}
   function drawLockedFog(){
