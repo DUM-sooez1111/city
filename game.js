@@ -6,9 +6,9 @@
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   const WORLD = { w: 1280, h: 720 };
   const sites = [
-    { id:'banana', name:'바나나 농장', icon:'🍌', x:485, y:505, cost:100, base:9, color:'#e7c845', built:false, level:0 },
-    { id:'lumber', name:'벌목장', icon:'🪵', x:720, y:500, cost:180, base:15, color:'#c88643', built:false, level:0 },
-    { id:'mine', name:'석재 광산', icon:'⛏', x:900, y:470, cost:420, base:32, color:'#8c9497', built:false, level:0 },
+    { id:'banana', name:'바나나 농장', icon:'🍌', x:520, y:535, cost:100, base:9, color:'#e7c845', built:false, level:0 },
+    { id:'lumber', name:'벌목장', icon:'🪵', x:650, y:540, cost:180, base:15, color:'#c88643', built:false, level:0 },
+    { id:'mine', name:'석재 광산', icon:'⛏', x:915, y:300, cost:420, base:32, color:'#8c9497', built:false, level:0 },
     { id:'port', name:'무역 항구', icon:'⚓', x:260, y:470, cost:760, base:55, color:'#4996b9', built:false, level:0 },
   ];
   const state = Object.assign({ coins:250, wood:0, bananas:0, stone:0, xp:0, level:1, levelEarnings:0, totalEarned:0, quest:0, sound:true, boostUntil:0, trucks:{}, roadLevel:1, craneLevel:1, truckLoadLevel:1, activeTruckFleet:0, truckLoads:[], deliveredCargo:0, deliveredValue:0, cargoQueue:0, cargoValueQueue:0, cargoProgress:0 }, JSON.parse(localStorage.getItem('idle-island-save') || '{}'));
@@ -37,6 +37,7 @@
     road([[565,350],[575,205],[670,120],[820,0]],34); road([[875,425],[900,530],[985,640]],32); road([[300,240],[230,340],[260,470]],30);
     // Starter-island loop. Trucks use this exact center line until the mainland unlocks.
     road([[300,470],[335,575],[465,650],[625,630],[760,540],[730,470],[610,440],[450,440],[300,470]],28);
+    road([[450,440],[520,450]],22);road([[610,440],[650,500]],22);road([[875,425],[915,390]],22);
     // rail line
     ctx.strokeStyle='#4f5960';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(0,135);ctx.lineTo(190,135);ctx.quadraticCurveTo(260,135,310,185);ctx.lineTo(410,220);ctx.stroke();ctx.strokeStyle='#d6d1bd';ctx.lineWidth=2;ctx.setLineDash([8,7]);ctx.stroke();ctx.setLineDash([]);
     for(let x=0;x<200;x+=16){ctx.fillStyle='#5c5145';ctx.fillRect(x,127,3,16)}
@@ -48,21 +49,21 @@
   function drawScenery(){
     // factory and farm plots
     building(570,175,86,58,'#ded9cc','#da9a48');ctx.fillStyle='#7b8d91';ctx.strokeStyle='#304e54';ctx.lineWidth=3;ctx.beginPath();ctx.arc(606,145,9,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#bac8c5';ctx.beginPath();ctx.arc(606,145,4,0,7);ctx.fill();
-    path(()=>ctx.ellipse(485,505,105,70,0,0,7),'#8ac557','#5d8c3c',3);
-    for(let row=0;row<4;row++)for(let col=0;col<6;col++){const x=435+col*19+(row%2)*6,y=472+row*20;ctx.fillStyle='#8b622f';ctx.fillRect(x-1,y,3,8);ctx.fillStyle='#e5c42e';ctx.beginPath();ctx.arc(x-5,y,5,0,7);ctx.arc(x+5,y,5,0,7);ctx.fill()}
-    building(720,500,65,48,'#c99a58','#855624');
+    path(()=>ctx.ellipse(520,535,92,67,0,0,7),'#8ac557','#5d8c3c',3);
+    for(let row=0;row<4;row++)for(let col=0;col<6;col++){const x=473+col*17+(row%2)*5,y=500+row*18;ctx.fillStyle='#8b622f';ctx.fillRect(x-1,y,3,8);ctx.fillStyle='#e5c42e';ctx.beginPath();ctx.arc(x-5,y,5,0,7);ctx.arc(x+5,y,5,0,7);ctx.fill()}
+    building(650,540,65,48,'#c99a58','#855624');
     // lumber yard logs
-    for(let i=0;i<7;i++){ctx.fillStyle='#9d612f';ctx.fillRect(758+(i%3)*13,470+Math.floor(i/3)*11,28,8);ctx.strokeStyle='#5f3e24';ctx.strokeRect(758+(i%3)*13,470+Math.floor(i/3)*11,28,8)}
+    for(let i=0;i<7;i++){ctx.fillStyle='#9d612f';ctx.fillRect(686+(i%3)*13,518+Math.floor(i/3)*11,28,8);ctx.strokeStyle='#5f3e24';ctx.strokeRect(686+(i%3)*13,518+Math.floor(i/3)*11,28,8)}
     // mine
-    path(()=>{ctx.moveTo(832,475);ctx.lineTo(875,402);ctx.lineTo(965,420);ctx.lineTo(1002,500);ctx.lineTo(945,560);ctx.lineTo(850,540);ctx.closePath()},'#777b76','#4e5554',4);
-    path(()=>{ctx.moveTo(878,476);ctx.quadraticCurveTo(902,440,928,476);ctx.lineTo(928,520);ctx.lineTo(878,520);ctx.closePath()},'#34434a','#202d31',4);
-    ctx.strokeStyle='#d29531';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(885,512);ctx.lineTo(885,463);ctx.lineTo(921,463);ctx.lineTo(921,512);ctx.stroke();
-    building(1080,335,80,58,'#d7d4c7','#e09249'); building(1150,410,62,48,'#d69b5c','#a65c34');
+    path(()=>{ctx.moveTo(847,305);ctx.lineTo(890,232);ctx.lineTo(980,250);ctx.lineTo(1017,330);ctx.lineTo(960,390);ctx.lineTo(865,370);ctx.closePath()},'#777b76','#4e5554',4);
+    path(()=>{ctx.moveTo(893,306);ctx.quadraticCurveTo(917,270,943,306);ctx.lineTo(943,350);ctx.lineTo(893,350);ctx.closePath()},'#34434a','#202d31',4);
+    ctx.strokeStyle='#d29531';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(900,342);ctx.lineTo(900,293);ctx.lineTo(936,293);ctx.lineTo(936,342);ctx.stroke();
+    building(1080,335,80,58,'#d7d4c7','#e09249'); building(1170,285,62,48,'#d69b5c','#a65c34');
     // airport locked
     ctx.fillStyle='#b9b9ae';ctx.fillRect(1070,15,150,45);ctx.strokeStyle='#647477';ctx.strokeRect(1070,15,150,45);ctx.fillStyle='#f7f4df';ctx.fillRect(1085,35,120,4);ctx.font='bold 17px Nunito';ctx.fillStyle='#455a60';ctx.fillText('✈  LEVEL 8',1090,47);
     drawUnloadingArea();
   }
-  function drawUnloadingArea(){ctx.save();ctx.fillStyle='#c8c7bd';ctx.strokeStyle='#41545a';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(195,440,88,62,6);ctx.fill();ctx.stroke();ctx.strokeStyle='#f4f0da';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.strokeRect(202,447,74,48);ctx.setLineDash([]);ctx.fillStyle='#42545a';ctx.font='900 9px Nunito';ctx.textAlign='center';ctx.fillText('UNLOADING',239,496);const count=Math.min(12,state.deliveredCargo||0);for(let i=0;i<count;i++)drawContainer(211+(i%4)*16,458+Math.floor(i/4)*12,['#e5a12e','#4d9cc3','#ce5d48'][i%3]);ctx.restore()}
+  function drawUnloadingArea(){ctx.save();ctx.fillStyle='#c8c7bd';ctx.strokeStyle='#41545a';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(125,440,88,62,6);ctx.fill();ctx.stroke();ctx.strokeStyle='#f4f0da';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.strokeRect(132,447,74,48);ctx.setLineDash([]);ctx.fillStyle='#42545a';ctx.font='900 9px Nunito';ctx.textAlign='center';ctx.fillText('UNLOADING',169,496);const count=Math.min(12,state.deliveredCargo||0);for(let i=0;i<count;i++)drawContainer(141+(i%4)*16,458+Math.floor(i/4)*12,['#e5a12e','#4d9cc3','#ce5d48'][i%3]);ctx.restore()}
   function drawSite(s){
     if(s.built){
       ctx.fillStyle='#fff';ctx.strokeStyle='#304e54';ctx.lineWidth=3;ctx.beginPath();ctx.arc(s.x,s.y-75,25,0,7);ctx.fill();ctx.stroke();ctx.font='22px serif';ctx.textAlign='center';ctx.fillText(s.icon,s.x,s.y-67);ctx.font='900 12px Nunito';ctx.fillStyle='#263f45';ctx.fillText(`Lv.${s.level}`,s.x,s.y-97);
@@ -92,9 +93,9 @@
     drawCargoShip();
   }
   function truckRoute(producer){
-    if(producer?.id==='mine')return [[260,470],[230,340],[300,240],[425,260],[560,350],[730,365],[875,425],[730,365],[560,350],[425,260],[300,240],[230,340]];
-    if(producer?.id==='lumber')return [[260,470],[300,470],[450,440],[610,440],[730,470],[610,440],[450,440],[300,470]];
-    return [[260,470],[300,470],[450,440],[485,440],[450,440],[300,470]];
+    if(producer?.id==='mine')return [[220,470],[230,340],[300,240],[425,260],[560,350],[730,365],[875,425],[915,390],[875,425],[730,365],[560,350],[425,260],[300,240],[230,340]];
+    if(producer?.id==='lumber')return [[220,470],[300,470],[450,440],[610,440],[650,500],[610,440],[450,440],[300,470]];
+    return [[220,470],[300,470],[450,440],[520,450],[450,440],[300,470]];
   }
   function availableTruckCount(){return Math.min(12,sites.filter(s=>s.built&&s.id!=='port').reduce((n,s)=>n+(state.trucks[s.id]||1)+milestoneCount(s),0))}
   function activeTruckCount(){const fleet=availableTruckCount();if(!fleet){state.activeTruckFleet=0;return 0}const desired=Math.min(fleet,Math.max(1,Math.ceil(state.cargoQueue||0)));state.activeTruckFleet=Math.max(Math.min(fleet,state.activeTruckFleet||0),desired);return state.activeTruckFleet}
