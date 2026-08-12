@@ -64,13 +64,15 @@
     drawUnloadingArea();
   }
   function drawUnloadingArea(){ctx.save();ctx.fillStyle='#c8c7bd';ctx.strokeStyle='#41545a';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(125,440,88,62,6);ctx.fill();ctx.stroke();ctx.strokeStyle='#f4f0da';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.strokeRect(132,447,74,48);ctx.setLineDash([]);ctx.fillStyle='#42545a';ctx.font='900 9px Nunito';ctx.textAlign='center';ctx.fillText('UNLOADING',169,496);const count=Math.min(12,state.deliveredCargo||0);for(let i=0;i<count;i++)drawContainer(141+(i%4)*16,458+Math.floor(i/4)*12,['#e5a12e','#4d9cc3','#ce5d48'][i%3]);ctx.restore()}
+  function siteMarkerPosition(s){const positions={banana:[520,535],lumber:[650,550],mine:[915,300],port:[170,410]},p=positions[s.id]||[s.x,s.y];return{x:p[0],y:p[1]}}
   function drawSite(s){
+    const marker=siteMarkerPosition(s);
     if(s.built){
-      ctx.fillStyle='#fff';ctx.strokeStyle='#304e54';ctx.lineWidth=3;ctx.beginPath();ctx.arc(s.x,s.y-75,25,0,7);ctx.fill();ctx.stroke();ctx.font='22px serif';ctx.textAlign='center';ctx.fillText(s.icon,s.x,s.y-67);ctx.font='900 12px Nunito';ctx.fillStyle='#263f45';ctx.fillText(`Lv.${s.level}`,s.x,s.y-97);
-      const pulse=1+Math.sin(t*3+s.x)*.08;ctx.save();ctx.translate(s.x+32,s.y-62);ctx.scale(pulse,pulse);ctx.fillStyle='#ffe03e';ctx.strokeStyle='white';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,12,0,7);ctx.fill();ctx.stroke();ctx.restore();
+      ctx.fillStyle='#fff';ctx.strokeStyle='#304e54';ctx.lineWidth=3;ctx.beginPath();ctx.arc(marker.x,marker.y,25,0,7);ctx.fill();ctx.stroke();ctx.font='22px serif';ctx.textAlign='center';ctx.fillText(s.icon,marker.x,marker.y+8);ctx.font='900 12px Nunito';ctx.fillStyle='#263f45';ctx.fillText(`Lv.${s.level}`,marker.x,marker.y-22);
+      const pulse=1+Math.sin(t*3+s.x)*.08;ctx.save();ctx.translate(marker.x+32,marker.y+13);ctx.scale(pulse,pulse);ctx.fillStyle='#ffe03e';ctx.strokeStyle='white';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,12,0,7);ctx.fill();ctx.stroke();ctx.restore();
       if(s.id!=='port'){const producers=sites.filter(p=>p.built&&p.id!=='port'),index=producers.indexOf(s),waiting=Math.max(0,Math.ceil(((state.cargoQueue||0)-index)/Math.max(1,producers.length))),colors={banana:'#e4c738',lumber:'#9f642d',mine:'#8b9598'};for(let i=0;i<Math.min(3,waiting);i++)drawContainer(s.x-17+i*17,s.y+43,colors[s.id]||'#d88b2d')}
     } else {
-      const pulse=1+Math.sin(t*2+s.x)*.06;ctx.save();ctx.translate(s.x,s.y-68);ctx.scale(pulse,pulse);ctx.fillStyle='#fffdf0';ctx.strokeStyle='#304e54';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,29,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#72c941';ctx.beginPath();ctx.arc(0,0,21,0,7);ctx.fill();ctx.fillStyle='white';ctx.font='900 25px Nunito';ctx.textAlign='center';ctx.fillText('+',0,9);ctx.restore();
+      const pulse=1+Math.sin(t*2+s.x)*.06;ctx.save();ctx.translate(marker.x,marker.y);ctx.scale(pulse,pulse);ctx.fillStyle='#fffdf0';ctx.strokeStyle='#304e54';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,29,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#72c941';ctx.beginPath();ctx.arc(0,0,21,0,7);ctx.fill();ctx.fillStyle='white';ctx.font='900 25px Nunito';ctx.textAlign='center';ctx.fillText('+',0,9);ctx.restore();
     }
   }
   function drawVehicles(){
@@ -90,7 +92,7 @@
   }
   function truckRoute(producer){
     if(producer?.id==='mine')return [[220,470],[230,340],[300,240],[425,260],[560,350],[730,365],[875,425],[915,390],[875,425],[730,365],[560,350],[425,260],[300,240],[230,340]];
-    if(producer?.id==='lumber')return [[220,470],[300,470],[450,440],[610,440],[650,500],[610,440],[450,440],[300,470]];
+    if(producer?.id==='lumber')return [[220,470],[300,470],[450,440],[610,440],[650,485],[610,440],[450,440],[300,470]];
     return [[220,470],[300,470],[450,440],[520,450],[450,440],[300,470]];
   }
   function truckAssignments(){const producers=sites.filter(s=>s.built&&s.id!=='port'),counts=producers.map(s=>(state.trucks[s.id]||1)+milestoneCount(s)),result=[],max=Math.max(0,...counts);for(let slot=0;slot<max&&result.length<12;slot++)for(let i=0;i<producers.length&&result.length<12;i++)if(counts[i]>slot)result.push(producers[i]);return result}
@@ -168,7 +170,7 @@
   function clampCamera(){const r=canvas.getBoundingClientRect(),worldW=WORLD.w*scale,worldH=WORLD.h*scale;offsetX=Math.min(0,Math.max(r.width-worldW,offsetX));offsetY=Math.min(0,Math.max(r.height-worldH,offsetY))}
   canvas.addEventListener('pointerdown',(e)=>{if(e.pointerType==='mouse'&&e.button!==0)return;drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};canvas.setPointerCapture(e.pointerId)});
   canvas.addEventListener('pointermove',(e)=>{if(!drag||drag.id!==e.pointerId)return;const total=Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY);if(total>6){drag.moved=true;canvas.classList.add('dragging')}if(!drag.moved)return;offsetX+=e.clientX-drag.lastX;offsetY+=e.clientY-drag.lastY;drag.lastX=e.clientX;drag.lastY=e.clientY;clampCamera()});
-  canvas.addEventListener('pointerup',(e)=>{if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;canvas.classList.remove('dragging');if(moved)return;if(!$('welcome').classList.contains('closed'))return;const p=screenToWorld(e.clientX,e.clientY);const s=sites.find(x=>Math.hypot(p.x-x.x,p.y-(x.y-55))<55);if(!s){if(state.level<3&&p.y<400)toast('본섬은 레벨 3에 해금됩니다');return}if(!s.built){focused=s;openBuild()}else{collect(s,e.clientX,e.clientY);openFacility(s)}});
+  canvas.addEventListener('pointerup',(e)=>{if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;canvas.classList.remove('dragging');if(moved)return;if(!$('welcome').classList.contains('closed'))return;const p=screenToWorld(e.clientX,e.clientY);const s=sites.find(x=>{const marker=siteMarkerPosition(x);return Math.hypot(p.x-marker.x,p.y-marker.y)<55});if(!s){if(state.level<3&&p.y<400)toast('본섬은 레벨 3에 해금됩니다');return}if(!s.built){focused=s;openBuild()}else{collect(s,e.clientX,e.clientY);openFacility(s)}});
   canvas.addEventListener('pointercancel',()=>{drag=null;canvas.classList.remove('dragging')});
   function collect(s,x,y){let value=Math.max(10,Math.round(facilityIncome(s)*3));const perfect=Math.random()*100<perfectChance(s);if(perfect)value*=2;state.cargoQueue=Math.min(50,(state.cargoQueue||0)+1);state.cargoValueQueue=(state.cargoValueQueue||0)+value;if(s.id==='banana')state.bananas+=s.level;if(s.id==='lumber')state.wood+=s.level;if(perfect)toast('완벽 화물! 출항 가격 2배');popIncome(x,y,perfect?'PERFECT CARGO +1':'CARGO +1');save()}
   function popIncome(x,y,text){const n=document.createElement('span');n.className='income-pop';n.textContent=text;n.style.left=x+'px';n.style.top=y+'px';$('incomeLayer').appendChild(n);setTimeout(()=>n.remove(),1000)}
