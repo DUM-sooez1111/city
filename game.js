@@ -22,7 +22,7 @@
     { id:'honey', name:'양봉장', icon:'🍯', x:930, y:-220, markerX:850, markerY:-175, unlock:15, route:'honey', cost:7600, base:320, color:'#dfa82e', extra:true, built:false, level:0 },
     { id:'dairy', name:'낙농 목장', icon:'🥛', x:1050, y:-300, markerX:1135, markerY:-365, unlock:16, route:'dairy', cost:11000, base:430, color:'#f1eee1', extra:true, built:false, level:0 },
   ];
-  const ISLAND_LEVELS={palm:8,mainland:4,cedar:13,coffee:17};
+  const ISLAND_LEVELS={palm:8,mainland:4,eastMainland:7,cedar:13,coffee:17};
   const LEVEL_UNLOCKS={2:'벌목장',3:'무역 항구',4:'Emerald Bay 본섬',5:'천일염 염전',6:'석재 광산',7:'사탕수수 농장',8:'Palm Key',9:'코코넛 농장',10:'화훼 농장',11:'제철소',12:'수산 양식장',13:'Cedar Isle',14:'차 농장',15:'양봉장',16:'낙농 목장',17:'Coffee Key',18:'커피 농장',19:'카카오 농장'};
   const state = Object.assign({ coins:250, wood:0, bananas:0, stone:0, xp:0, level:1, levelEarnings:0, totalEarned:0, quest:0, sound:true, boostUntil:0, trucks:{}, roadLevel:1, craneLevel:1, truckLoadLevel:1, activeTruckFleet:0, truckLoads:[], deliveredCargo:0, deliveredValue:0, cargoQueue:0, cargoValueQueue:0, cargoProgress:0 }, JSON.parse(localStorage.getItem('idle-island-save') || '{}'));
   if(!Array.isArray(state.truckLoads))state.truckLoads=[];
@@ -269,13 +269,26 @@
     ctx.restore();
     ctx.save();ctx.strokeStyle='#b6ec63';ctx.globalAlpha=.16;ctx.lineWidth=2;ctx.shadowColor='#64d33d';ctx.shadowBlur=25;ctx.beginPath();ctx.moveTo(0,395);ctx.bezierCurveTo(220,345,410,430,590,390);ctx.bezierCurveTo(760,335,980,375,WORLD.w,330);ctx.stroke();ctx.restore();
   }
+  function drawEastMainlandFog(){
+    if(state.level>=ISLAND_LEVELS.eastMainland)return;
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(360,-45);ctx.bezierCurveTo(590,-75,850,-70,1110,-55);ctx.lineTo(1280,-25);ctx.lineTo(1280,590);ctx.bezierCurveTo(1110,640,870,625,665,570);ctx.bezierCurveTo(500,525,405,430,365,300);ctx.bezierCurveTo(335,190,340,55,360,-45);ctx.closePath();ctx.clip();
+    fillSoftFog(900,245,610,390,.94);
+    ctx.globalAlpha=.2;
+    for(let i=0;i<12;i++){
+      const x=440+i*78,y=35+(i%4)*112;
+      ctx.fillStyle='#06191c';ctx.beginPath();ctx.arc(x,y,70+(i%3)*17,0,7);ctx.fill();
+    }
+    ctx.globalAlpha=1;drawIslandLockLabel(875,230,ISLAND_LEVELS.eastMainland,'동부 구역');
+    ctx.restore();
+  }
   function drawPalmIslandFog(){if(state.level>=ISLAND_LEVELS.palm)return;ctx.save();ctx.beginPath();ctx.moveTo(-555,72);ctx.bezierCurveTo(-475,10,-315,12,-195,48);ctx.bezierCurveTo(-95,78,-50,130,-68,205);ctx.bezierCurveTo(-83,274,-175,315,-305,312);ctx.bezierCurveTo(-445,314,-555,260,-580,175);ctx.bezierCurveTo(-594,130,-584,94,-555,72);ctx.closePath();ctx.clip();fillSoftFog(-330,160,278,170,.88);ctx.globalAlpha=.12;for(let i=0;i<7;i++){ctx.fillStyle='#082226';ctx.beginPath();ctx.arc(-535+i*72,80+(i%3)*75,45+(i%2)*13,0,7);ctx.fill()}ctx.globalAlpha=1;drawIslandLockLabel(-330,150,ISLAND_LEVELS.palm,'Palm Key');ctx.restore()}
   function drawCedarIslandFog(){if(state.level>=ISLAND_LEVELS.cedar)return;ctx.save();ctx.beginPath();ctx.moveTo(660,-430);ctx.bezierCurveTo(745,-510,920,-520,1080,-472);ctx.bezierCurveTo(1210,-435,1260,-350,1220,-260);ctx.bezierCurveTo(1180,-165,1050,-105,910,-112);ctx.bezierCurveTo(770,-118,650,-185,625,-290);ctx.bezierCurveTo(610,-350,625,-397,660,-430);ctx.closePath();ctx.clip();fillSoftFog(930,-315,330,215,.88);ctx.globalAlpha=.12;for(let i=0;i<8;i++){ctx.fillStyle='#082226';ctx.beginPath();ctx.arc(680+i*75,-430+(i%3)*95,48+(i%2)*14,0,7);ctx.fill()}ctx.globalAlpha=1;drawIslandLockLabel(930,-315,ISLAND_LEVELS.cedar,'Cedar Isle');ctx.restore()}
   function drawCoffeeIslandFog(){if(state.level>=ISLAND_LEVELS.coffee)return;ctx.save();ctx.beginPath();ctx.moveTo(-565,340);ctx.bezierCurveTo(-505,278,-380,268,-255,292);ctx.bezierCurveTo(-145,312,-98,372,-112,446);ctx.bezierCurveTo(-82,525,-155,635,-295,680);ctx.bezierCurveTo(-470,705,-585,615,-590,475);ctx.bezierCurveTo(-592,415,-585,370,-565,340);ctx.closePath();ctx.clip();fillSoftFog(-335,475,270,225,.88);ctx.globalAlpha=.13;for(let i=0;i<7;i++){ctx.fillStyle='#071d20';ctx.beginPath();ctx.arc(-535+i*68,370+(i%3)*92,48+(i%2)*16,0,7);ctx.fill()}ctx.globalAlpha=1;drawIslandLockLabel(-330,430,ISLAND_LEVELS.coffee,'Coffee Key');ctx.restore()}
   function drawIslandLockLabel(x,y,level,name){ctx.fillStyle='white';ctx.textAlign='center';ctx.font='900 38px Nunito';ctx.fillText('🔒',x,y);ctx.font='900 18px Nunito';ctx.fillText(`LEVEL ${level}`,x,y+35);ctx.font='900 12px Nunito';ctx.fillText(`${name} 해금`,x,y+57)}
   function producerIslandLevel(s){if(['coconut','flowers'].includes(s.id))return ISLAND_LEVELS.palm;if(['tea','honey','dairy'].includes(s.id))return ISLAND_LEVELS.cedar;if(['coffee','cocoa'].includes(s.id))return ISLAND_LEVELS.coffee;if(['salt','mine','sugar','steel','fish'].includes(s.id))return ISLAND_LEVELS.mainland;return 1}
   function drawLockedProducerFogs(){sites.filter(s=>state.level>=producerIslandLevel(s)&&state.level<unlockLevel(s)).forEach(s=>{const marker=siteMarkerPosition(s),x=(s.x+marker.x)/2,y=(s.y+marker.y)/2,rx=72+Math.abs(s.x-marker.x)*.45,ry=64+Math.abs(s.y-marker.y)*.3;ctx.save();ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,7);ctx.clip();fillSoftFog(x,y,rx,ry,.82);ctx.globalAlpha=.1;for(let i=0;i<4;i++){ctx.fillStyle='#051b1d';ctx.beginPath();ctx.arc(x-rx*.55+i*rx*.36,y+(i%2?18:-20),28+i*3,0,7);ctx.fill()}ctx.globalAlpha=1;ctx.fillStyle='white';ctx.textAlign='center';ctx.font='900 22px serif';ctx.fillText('🔒',marker.x,marker.y-4);ctx.font='900 10px Nunito';ctx.fillText(`LEVEL ${unlockLevel(s)}`,marker.x,marker.y+15);ctx.restore()})}
-  function draw(){ctx.setTransform(DPR*scale,0,0,DPR*scale,DPR*offsetX,DPR*offsetY);drawWater();drawIsland();drawScenery();sites.forEach(drawSite);drawVehicles();drawLockedProducerFogs();drawLockedFog();drawPalmIslandFog();drawCedarIslandFog();drawCoffeeIslandFog();}
+  function draw(){ctx.setTransform(DPR*scale,0,0,DPR*scale,DPR*offsetX,DPR*offsetY);drawWater();drawIsland();drawScenery();sites.forEach(drawSite);drawVehicles();drawLockedProducerFogs();drawLockedFog();drawEastMainlandFog();drawPalmIslandFog();drawCedarIslandFog();drawCoffeeIslandFog();}
   function update(dt){
     t+=dt;const boost=Date.now()<state.boostUntil?2:1;
     const producers=sites.filter(s=>s.built&&s.id!=='port');const itemRate=producers.reduce((n,s)=>n+dt/(facilityTime(s)+truckLoadingTime()),0)*boost,valueRate=producers.reduce((n,s)=>n+dt*facilityIncome(s)/(facilityTime(s)+truckLoadingTime()),0)*boost;state.cargoProgress=(state.cargoProgress||0)+itemRate;state.cargoValueQueue=(state.cargoValueQueue||0)+valueRate;if(state.cargoProgress>=1){const made=Math.floor(state.cargoProgress);state.cargoQueue=Math.min(50,(state.cargoQueue||0)+made);state.cargoProgress-=made}
